@@ -6,18 +6,18 @@ typedef int bool;
 #define false 0
 
 
-bool contains(const char* parent, const char* child) {
-    if (strstr(parent, child) != NULL) {
+bool contains(const char* string, const char* substring) {
+    if (strstr(string, substring) != NULL) {
         return true;
     }
     return false;
 }
 
 int main() {
-    char *sent = "this is my sample example";
+    char *sentence = "this is my sample example";
     char *word = "sample";
 
-    if (contains(sent, word)) {
+    if (contains(sentence, word)) {
         printf("Contains");
     } else {
         printf("Nope!");
