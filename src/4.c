@@ -25,7 +25,6 @@ void shiftArr(char* arr, const int shiftBy) {
         jStart = length - 1;
         jEnd = -1;
     }
-    printf("shift is : %d\n", jEnd);
 
     for (unsigned int i = 0; i < shiftByAbs; i++) {
         char lastValue = arr[jStart];

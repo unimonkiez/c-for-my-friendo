@@ -25,22 +25,21 @@ void shiftArr(char* arr, const int shiftBy) {
         arr[i] = lastValue;
         lastValue = temp;
 
-        i = (i + shiftBy) % length;
-        timesMoved++;
-
-        if (i == startIndex) {
-            arr[i] = lastValue;
-            i++;
+        if (i != startIndex) {
+            i = (i + shiftBy) % length;
+        } else {
+            i = (startIndex + shiftBy + 1) % length;
             startIndex++;
-            timesMoved++;
+            lastValue = arr[startIndex];
         }
+        timesMoved++;
     }
 }
 
 int main() {
     char arr[] = "1234";
     char shiftedArr[] = "1234";
-    shiftArr(shiftedArr, 2);
+    shiftArr(shiftedArr, 0);
 
     printf("arr is: %s, shifted is: %s", arr, shiftedArr);
 }
