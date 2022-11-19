@@ -39,7 +39,7 @@ void shiftArr(char* arr, const int shiftBy) {
 int main() {
     char arr[] = "1234";
     char shiftedArr[] = "1234";
-    shiftArr(shiftedArr, 0);
+    shiftArr(shiftedArr, 2);
 
     printf("arr is: %s, shifted is: %s", arr, shiftedArr);
 }
