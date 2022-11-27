@@ -38,9 +38,9 @@ void shiftArr(char* arr, const int shiftBy) {
 }
 
 int main() {
-    char arr[] = "12345";
-    char shiftedArr[] = "12345";
-    shiftArr(shiftedArr, 2);
+    char arr[] = "123456";
+    char shiftedArr[] = "123456";
+    shiftArr(shiftedArr, -3);
 
     printf("arr is: %s, shifted is: %s", arr, shiftedArr);
 }
