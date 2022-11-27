@@ -16,7 +16,7 @@ int main(){
 unsigned int removeDuplicates(int array[], const int size){
     unsigned int addedSize = 0;
     for(int i = 0; i < size; i++) {
-        if (addedSize == 0 || array[i] != array[addedSize - 1]) {
+        if (i == 0 || array[i] != array[addedSize - 1]) {
             array[addedSize] = array[i];
             addedSize++;
         }
