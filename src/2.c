@@ -1,20 +1,29 @@
 #include <stdio.h>
-#include <string.h>
-
-
-long double pow2(long double base, unsigned int exponent) {
-    if (exponent == 0) {
-        return 1;
-    } 
-    long double returnedValue = base;
-    unsigned int remainingExponent = exponent - 1;
-    while (remainingExponent > 0) {
-        returnedValue = returnedValue * base;
-        remainingExponent = remainingExponent - 1;
-    }
-    return returnedValue;
+ 
+void power(float base, float expo);
+ 
+int main(){
+    float base = 2, expo = -2;
+    power(base, expo);
 }
 
-int main() {
-    printf("2^3 is %Lf", pow2(2, 2));
+void power(float base, float expo){
+    float results =1;
+
+    float multi;
+    float add;
+    if(expo > 0){
+        multi = base;
+        add = (-1);
+    }
+    else{
+        multi = (1.0 / base);
+        add = 1;
+    }
+
+    while (expo != 0){
+        results *=  multi;
+        expo = expo + add;
+    }
+    printf("%f", results);
 }
