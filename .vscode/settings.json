@@ -1,0 +1,7 @@
+{
+  "files.associations": {
+    "stdio.h": "c",
+    "main.h": "c"
+  },
+  "editor.defaultFormatter": "esbenp.prettier-vscode"
+}
