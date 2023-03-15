@@ -6,18 +6,6 @@
 #define END_STRING_CHAR '\n'
 #define NULL_TERMINATOR '\0'
 
-char *allocateString(unsigned int size)
-{
-    char *string = (char *)malloc((size + 1) * sizeof(char));
-    string[size] = NULL_TERMINATOR;
-    return string;
-}
-
-void deallocateString(char *string)
-{
-    free(string);
-}
-
 char *scanUnlimitedString()
 {
     char *string = "";
@@ -39,7 +27,8 @@ char *scanUnlimitedString()
         if (inputChar != END_STRING_CHAR)
         {
             int newSize = size + 1;
-            char *tempString = allocateString(newSize);
+            char *tempString = (char *)malloc((newSize + 1) * sizeof(char));
+            tempString[newSize] = NULL_TERMINATOR;
             strcpy(tempString, string);
             tempString[newSize - 1] = inputChar;
             tempString[newSize] = NULL_TERMINATOR;
@@ -47,7 +36,7 @@ char *scanUnlimitedString()
             int notFirstLoop = size != 0;
             if (notFirstLoop)
             {
-                deallocateString(string);
+                free(string);
             }
 
             string = tempString;
@@ -117,9 +106,9 @@ char *readfile(char *filename)
 // ############## Start of commands ################
 enum ChainResult
 {
-    Exit = 1,
-    Handled = 0,
-    Pass = 2
+    Exit,
+    Handled,
+    Pass
 };
 
 typedef struct Command
@@ -190,9 +179,9 @@ enum ChainResult append_command(struct Command cmd, char *filename, char *input)
     }
     FILE *fp = fopen(filename, "a");
     fprintf(fp, "%s\n", input);
+    fclose(fp);
     printf("The file \"%s\" was appended the string \"%s\"", filename, input);
     printf("\n");
-    fclose(fp);
 
     return Handled;
 }
@@ -204,8 +193,9 @@ enum ChainResult prepend_command(struct Command cmd, char *filename, char *input
     {
         return Pass;
     }
-    char *input_without_symbol = input + 1;
     remove(prepend_tmp_filename);
+
+    char *input_without_symbol = input + 1;
     FILE *tmp_fp = fopen(prepend_tmp_filename, "a");
     fprintf(tmp_fp, "%s\n", input_without_symbol);
     char *filecontents = readfile(filename);
@@ -217,7 +207,7 @@ enum ChainResult prepend_command(struct Command cmd, char *filename, char *input
     printf("The file \"%s\" was prepended the string \"%s\"", filename, input_without_symbol);
     printf("\n");
 
-    return 0;
+    return Handled;
 }
 
 // Command array - ADD NEW COMMAND HERE
@@ -243,7 +233,6 @@ int main(int argc, char *argv[])
 {
     char *filename = argv[1];
 
-    FILE *file = fopen(filename, "a");
     if (create_file_if_not_exists(filename) == 1)
     {
         printf("Can't open the file \"%s\"", filename);
@@ -256,26 +245,30 @@ int main(int argc, char *argv[])
         printf("Enter a string (or '-exit' to exit): ");
         input = scanUnlimitedString();
 
-        for (unsigned int i = 0; i < sizeof(commands) / sizeof(Command); i++)
+        for (unsigned int i = 0; i < sizeof(commands) / sizeof(struct Command); i++)
         {
             struct Command cmd = commands[i];
             enum ChainResult chain_result = cmd.operation_func(cmd, filename, input);
 
             if (chain_result == Exit)
             {
+                free(input);
+                input = NULL;
                 return 0;
             }
             else if (chain_result == Handled)
             {
                 break;
             }
+            else if (chain_result == Pass)
+            {
+                continue;
+            }
         }
 
-        deallocateString(input);
+        free(input);
         input = NULL;
     }
-    deallocateString(input);
-    input = NULL;
 
     return 0;
 }
