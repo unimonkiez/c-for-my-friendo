@@ -115,62 +115,95 @@ char *readfile(char *filename)
 // ############## End of utils ################
 
 // ############## Start of commands ################
+enum ChainResult
+{
+    Exit = 1,
+    Handled = 0,
+    Pass = 2
+};
+
+typedef struct Command
+{
+    char *flag;
+    int (*comparison_func)(struct Command cmd, char *input);
+    enum ChainResult (*operation_func)(struct Command cmd, char *filename, char *input);
+} Command;
 
 // Compare
-int compare_flag(char *flag, char *input)
+int compare_flag(struct Command cmd, char *input)
 {
-    return strcmp(input, flag) == 0;
+    return strcmp(input, cmd.flag) == 0;
 }
 
-int compare_first_char(char *flag, char *input)
+int compare_first_char(struct Command cmd, char *input)
 {
-    return input[0] == flag[0];
+    return input[0] == cmd.flag[0];
 }
 
-int compare_always_true(char *flag, char *input)
-{
-    return 1;
-}
-
-int exit_command(char *file, char *input)
+int compare_always_true(struct Command cmd, char *input)
 {
     return 1;
 }
 
 // Operations
-int remove_command(char *filename, char *input)
+enum ChainResult exit_command(struct Command cmd, char *filename, char *input)
 {
+    if (!cmd.comparison_func(cmd, input))
+    {
+        return Pass;
+    }
+    return Exit;
+}
+
+enum ChainResult remove_command(struct Command cmd, char *filename, char *input)
+{
+    if (!cmd.comparison_func(cmd, input))
+    {
+        return Pass;
+    }
     remove(filename);
     create_file_if_not_exists(filename);
     printf("The file \"%s\" was deleted", filename);
     printf("\n");
 
-    return 0;
+    return Handled;
 }
 
-int count_command(char *filename, char *input)
+enum ChainResult count_command(struct Command cmd, char *filename, char *input)
 {
+    if (!cmd.comparison_func(cmd, input))
+    {
+        return Pass;
+    }
     int lines = countlines(filename);
     printf("The file \"%s\" has %d lines.", filename, lines);
     printf("\n");
 
-    return 0;
+    return Handled;
 }
 
-int append_command(char *filename, char *input)
+enum ChainResult append_command(struct Command cmd, char *filename, char *input)
 {
+    if (!cmd.comparison_func(cmd, input))
+    {
+        return Pass;
+    }
     FILE *fp = fopen(filename, "a");
     fprintf(fp, "%s\n", input);
     printf("The file \"%s\" was appended the string \"%s\"", filename, input);
     printf("\n");
     fclose(fp);
 
-    return 0;
+    return Handled;
 }
 
 const char *prepend_tmp_filename = "/tmp/prepender";
-int prepend_command(char *filename, char *input)
+enum ChainResult prepend_command(struct Command cmd, char *filename, char *input)
 {
+    if (!cmd.comparison_func(cmd, input))
+    {
+        return Pass;
+    }
     char *input_without_symbol = input + 1;
     remove(prepend_tmp_filename);
     FILE *tmp_fp = fopen(prepend_tmp_filename, "a");
@@ -186,13 +219,6 @@ int prepend_command(char *filename, char *input)
 
     return 0;
 }
-
-typedef struct Command
-{
-    char *flag;
-    int (*comparison_func)(char *, char *);
-    int (*operation_func)(char *, char *);
-} Command;
 
 // Command array - ADD NEW COMMAND HERE
 const struct Command commands[] = {
@@ -232,16 +258,15 @@ int main(int argc, char *argv[])
 
         for (unsigned int i = 0; i < sizeof(commands) / sizeof(Command); i++)
         {
-            struct Command command = commands[i];
-            int compare_result = command.comparison_func(command.flag, input);
-            // printf("flag: %s, compare_result: %d\n", command.flag, compare_result);
-            if (compare_result)
+            struct Command cmd = commands[i];
+            enum ChainResult chain_result = cmd.operation_func(cmd, filename, input);
+
+            if (chain_result == Exit)
             {
-                int exit_code = command.operation_func(filename, input);
-                if (exit_code != 0)
-                {
-                    return exit_code;
-                }
+                return 0;
+            }
+            else if (chain_result == Handled)
+            {
                 break;
             }
         }
