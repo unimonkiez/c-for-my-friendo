@@ -115,32 +115,61 @@ char *readfile(char *filename)
 // ############## End of utils ################
 
 // ############## Start of commands ################
-void remove_command(char *filename, char *input)
+
+// Compare
+int compare_flag(char *flag, char *input)
+{
+    return strcmp(input, flag) == 0;
+}
+
+int compare_first_char(char *flag, char *input)
+{
+    return input[0] == flag[0];
+}
+
+int compare_always_true(char *flag, char *input)
+{
+    return 1;
+}
+
+int exit_command(char *file, char *input)
+{
+    return 1;
+}
+
+// Operations
+int remove_command(char *filename, char *input)
 {
     remove(filename);
     create_file_if_not_exists(filename);
     printf("The file \"%s\" was deleted", filename);
     printf("\n");
+
+    return 0;
 }
 
-void count_command(char *filename, char *input)
+int count_command(char *filename, char *input)
 {
     int lines = countlines(filename);
     printf("The file \"%s\" has %d lines.", filename, lines);
     printf("\n");
+
+    return 0;
 }
 
-void append_command(char *filename, char *input)
+int append_command(char *filename, char *input)
 {
     FILE *fp = fopen(filename, "a");
     fprintf(fp, "%s\n", input);
     printf("The file \"%s\" was appended the string \"%s\"", filename, input);
     printf("\n");
     fclose(fp);
+
+    return 0;
 }
 
 const char *prepend_tmp_filename = "/tmp/prepender";
-void prepend_command(char *filename, char *input)
+int prepend_command(char *filename, char *input)
 {
     char *input_without_symbol = input + 1;
     remove(prepend_tmp_filename);
@@ -154,7 +183,34 @@ void prepend_command(char *filename, char *input)
     rename(prepend_tmp_filename, filename);
     printf("The file \"%s\" was prepended the string \"%s\"", filename, input_without_symbol);
     printf("\n");
+
+    return 0;
 }
+
+typedef struct Command
+{
+    char *flag;
+    int (*comparison_func)(char *, char *);
+    int (*operation_func)(char *, char *);
+} Command;
+
+// Command array - ADD NEW COMMAND HERE
+const struct Command commands[] = {
+    {"-exit",
+     &compare_flag,
+     &exit_command},
+    {"-remove",
+     &compare_flag,
+     &remove_command},
+    {"-count",
+     &compare_flag,
+     &count_command},
+    {"<",
+     &compare_first_char,
+     &prepend_command},
+    {NULL,
+     &compare_always_true,
+     &append_command}};
 // ############## End of commands ################
 
 int main(int argc, char *argv[])
@@ -171,28 +227,23 @@ int main(int argc, char *argv[])
     char *input = NULL;
     while (1)
     {
-        printf("Enter a string (or 'exit' to exit): ");
+        printf("Enter a string (or '-exit' to exit): ");
         input = scanUnlimitedString();
 
-        if (strcmp(input, "exit") == 0)
+        for (unsigned int i = 0; i < sizeof(commands) / sizeof(Command); i++)
         {
-            break;
-        }
-        else if (strcmp(input, "-remove") == 0)
-        {
-            remove_command(filename, input);
-        }
-        else if (strcmp(input, "-count") == 0)
-        {
-            count_command(filename, input);
-        }
-        else if (input[0] == '<')
-        {
-            prepend_command(filename, input);
-        }
-        else
-        {
-            append_command(filename, input);
+            struct Command command = commands[i];
+            int compare_result = command.comparison_func(command.flag, input);
+            // printf("flag: %s, compare_result: %d\n", command.flag, compare_result);
+            if (compare_result)
+            {
+                int exit_code = command.operation_func(filename, input);
+                if (exit_code != 0)
+                {
+                    return exit_code;
+                }
+                break;
+            }
         }
 
         deallocateString(input);
