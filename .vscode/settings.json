@@ -2,10 +2,12 @@
   "editor.formatOnSave": true,
   "files.associations": {
     "stdio.h": "c",
-    "main.h": "c"
+    "main.h": "c",
+    "ios": "c"
   },
   "editor.defaultFormatter": "esbenp.prettier-vscode",
   "[c]": {
-    "editor.defaultFormatter": "ms-vscode.cpptools"
+    "editor.defaultFormatter": "ms-vscode.cpptools",
+    "files.insertFinalNewline": true
   }
 }
