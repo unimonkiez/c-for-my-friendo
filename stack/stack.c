@@ -62,7 +62,10 @@ void *Peek(const Stack *s)
 
 int Push(Stack *s, void *elem)
 {
+    size_t i = 0;
+    char *ptr_to_value = elem;
     char *ptr = NULL;
+
     if (s->num_elements == s->capacity)
     {
         return 1;
@@ -71,7 +74,10 @@ int Push(Stack *s, void *elem)
     ptr = s->data;
     ptr += (s->elem_size * s->num_elements);
 
-    *ptr = *((char *)elem);
+    for (i = 0; i < s->elem_size; i++)
+    {
+        *(ptr + i) = *((char *)(ptr_to_value + i));
+    }
 
     s->num_elements++;
 
